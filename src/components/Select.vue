@@ -498,6 +498,15 @@
       },
 
       /**
+       * Enables/disables updating the search text to the last typed text or selected value when the dropdown is opened.
+       * @type {Boolean}
+       */
+      preserveSearchText: {
+        type: Boolean,
+        default: false
+      },
+
+      /**
        * Close a dropdown when an option is chosen. Set to false to keep the dropdown
        * open (useful when combined with multi-select, for example)
        * @type {Boolean}
@@ -751,6 +760,7 @@
       return {
         search: '',
         open: false,
+        lastSearchText: '',
         mutableValue: null,
         mutableOptions: []
       }
@@ -899,8 +909,11 @@
           this.$refs.search.blur()
         }
 
-        if (this.clearSearchOnSelect) {
+        if (this.clearSearchOnSelect || !this.multiple) {
           this.search = ''
+        }
+        if (!this.multiple || this.preserveSearchText) {
+          this.lastSearchText = option[this.label]
         }
       },
 
@@ -1024,6 +1037,9 @@
        */
       onSearchFocus() {
         this.open = true
+        if (!this.multiple || this.preserveSearchText) {
+          this.search = this.lastSearchText || (this.mutableValue || {})[this.label]
+        }
         this.$emit('search:focus')
       },
 
