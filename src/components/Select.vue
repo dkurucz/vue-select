@@ -896,6 +896,7 @@
       clearSelection() {
         this.mutableValue = this.multiple ? [] : null
         this.onInput(this.mutableValue)
+        this.lastSearchText = ''
       },
 
       /**
@@ -1038,7 +1039,7 @@
       onSearchFocus() {
         this.open = true
         if (!this.multiple || this.preserveSearchText) {
-          this.search = this.lastSearchText || (this.mutableValue || {})[this.label]
+          this.search = this.lastSearchText || (this.mutableValue || {})[this.label] || ''
         }
         this.$emit('search:focus')
       },
