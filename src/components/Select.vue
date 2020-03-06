@@ -312,7 +312,7 @@
 
 <template>
   <div :dir="dir" class="dropdown v-select" :class="dropdownClasses">
-    <div ref="toggle" @mousedown.prevent="toggleDropdown" class="dropdown-toggle">
+    <div ref="toggle" @mousedown="toggleDropdown" class="dropdown-toggle">
 
       <div class="vs__selected-options" ref="selectedOptions">
         <slot v-for="option in valueAsArray" name="selected-option-container"
@@ -336,7 +336,7 @@
                 @keydown.down.prevent="typeAheadDown"
                 @keydown.enter.prevent="typeAheadSelect"
                 @keydown.tab="onTab"
-                @blur="onSearchBlur"
+                @focusout="onSearchBlur($event)"
                 @focus="onSearchFocus"
                 @input="search = $event.target.value"
                 type="search"
@@ -498,10 +498,19 @@
       },
 
       /**
-       * Enables/disables updating the search text to the last typed text or selected value when the dropdown is opened.
+       * Enables/disables updating the search text to the last selected value when the dropdown is opened.
        * @type {Boolean}
        */
-      preserveSearchText: {
+      preserveSelectedText: {
+        type: Boolean,
+        default: false
+      },
+
+      /**
+       * Enables/disables updating the search text to the last selected value when the dropdown is opened.
+       * @type {Boolean}
+       */
+      enableMouseSearchInput: {
         type: Boolean,
         default: false
       },
@@ -760,7 +769,6 @@
       return {
         search: '',
         open: false,
-        lastSearchText: '',
         mutableValue: null,
         mutableOptions: []
       }
@@ -775,6 +783,7 @@
        */
       value(val) {
         this.mutableValue = val
+        this.resetSearchState()
       },
 
       /**
@@ -788,6 +797,7 @@
           this.onChange ? this.onChange(val) : null
         } else {
           this.onChange && val !== old ? this.onChange(val) : null
+          this.resetSearchState()
         }
       },
 
@@ -896,7 +906,6 @@
       clearSelection() {
         this.mutableValue = this.multiple ? [] : null
         this.onInput(this.mutableValue)
-        this.lastSearchText = ''
       },
 
       /**
@@ -913,9 +922,6 @@
         if (this.clearSearchOnSelect || !this.multiple) {
           this.search = ''
         }
-        if (!this.multiple || this.preserveSearchText) {
-          this.lastSearchText = option[this.label]
-        }
       },
 
       /**
@@ -926,7 +932,10 @@
       toggleDropdown(e) {
         if (e.target === this.$refs.openIndicator || e.target === this.$refs.search || e.target === this.$refs.toggle ||
             e.target.classList.contains('selected-tag') || e.target === this.$el) {
-          if (this.open) {
+          if (!this.enableMouseSearchInput || e.target !== this.$refs.search) {
+            e.preventDefault()
+          }
+          if (this.open && (!this.enableMouseSearchInput || (this.enableMouseSearchInput && e.target !== this.$refs.search))) {
             this.$refs.search.blur() // dropdown will close on blur
           } else {
             if (!this.disabled) {
@@ -1038,8 +1047,8 @@
        */
       onSearchFocus() {
         this.open = true
-        if (!this.multiple || this.preserveSearchText) {
-          this.search = this.lastSearchText || (this.mutableValue || {})[this.label] || ''
+        if (!this.multiple || this.preserveSelectedText) {
+          this.search = (this.mutableValue || {})[this.label] || ''
         }
         this.$emit('search:focus')
       },
@@ -1102,6 +1111,10 @@
 
       onMouseup() {
         this.mousedown = false
+      },
+
+      resetSearchState () {
+        this.search = ''
       }
     },
 
