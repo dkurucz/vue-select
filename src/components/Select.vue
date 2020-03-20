@@ -678,7 +678,6 @@
       select(option) {
         if (!this.isOptionSelected(option)) {
           if (this.taggable && !this.optionExists(option)) {
-            option = this.createOption(option);
             this.$emit('option:created', option);
           }
           if (this.multiple) {
