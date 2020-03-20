@@ -57,9 +57,9 @@ export default {
      * @return {void}
      */
     typeAheadSelect () {
-      if (!this.taggable && this.filteredOptions[this.typeAheadPointer]) {
+      if (this.filteredOptions[this.typeAheadPointer]) {
         this.select(this.filteredOptions[this.typeAheadPointer]);
-      } else if (this.taggable && this.search.length) {
+      } else if (this.search.length) {
         this.select(this.createOption(this.search));
       }
 
