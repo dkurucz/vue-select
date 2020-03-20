@@ -61,7 +61,7 @@
           :key="getOptionKey(option)"
           :id="`vs${uid}__option-${index}`"
           class="vs__dropdown-option"
-          :class="{ 'vs__dropdown-option--selected': isOptionSelected(option), 'vs__dropdown-option--highlight': index === typeAheadPointer, 'vs__dropdown-option--disabled': !selectable(option) }"
+          :class="{ 'vs__dropdown-option--selected': isOptionSelected(option), 'vs__dropdown-option--highlight': (index === typeAheadPointer) && !isOptionSelected(option), 'vs__dropdown-option--disabled': !selectable(option) }"
           :aria-selected="index === typeAheadPointer ? true : null"
           @mouseover="selectable(option) ? typeAheadPointer = index : null"
           @mousedown.prevent.stop="selectable(option) ? select(option) : null"
@@ -658,7 +658,7 @@
        */
       select(option) {
         if (!this.isOptionSelected(option)) {
-          if (this.taggable && !this.optionExists(option)) {
+          if (this.taggable && !this.optionExistsShallow(option)) {
             this.$emit('option:created', option);
           }
           if (this.multiple) {
@@ -760,7 +760,7 @@
        * @return {Boolean}        True when selected | False otherwise
        */
       isOptionSelected(option) {
-        return this.selectedValue.some(value => this.optionComparator(value, option))
+        return this.selectedValue.some(value => this.optionComparatorShallow(value, option))
       },
 
       /**
@@ -772,6 +772,17 @@
        */
       optionComparator(a, b) {
         return this.getOptionKey(a) === this.getOptionKey(b);
+      },
+
+      /**
+       * Determine if two option objects are matching by label value.
+       *
+       * @param a {Object}
+       * @param b {Object}
+       * @returns {boolean}
+       */
+      optionComparatorShallow(a, b) {
+        return this.getOptionLabel(a) === this.getOptionLabel(b);
       },
 
       /**
@@ -837,6 +848,16 @@
        */
       optionExists(option) {
         return this.optionList.some(_option => this.optionComparator(_option, option))
+      },
+
+      /**
+       * Determine if an option exists within this.optionList array, comparison by label value.
+       *
+       * @param  {Object || String} option
+       * @return {boolean}
+       */
+      optionExistsShallow(option) {
+        return this.optionList.some(_option => this.optionComparatorShallow(_option, option))
       },
 
       /**
@@ -1152,7 +1173,7 @@
 
         let options = this.search.length ? this.filter(optionList, this.search, this) : optionList;
         const searchOption = this.createOption(this.search)
-        if (this.taggable && this.search.length && !this.optionExists(searchOption)) {
+        if (this.taggable && this.search.length && !this.optionExistsShallow(searchOption)) {
           options.unshift(searchOption)
         }
         return options
