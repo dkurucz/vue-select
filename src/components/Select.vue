@@ -731,7 +731,7 @@
        * @param value
        */
       updateValue (value) {
-        if (this.isTrackingValues) {
+        if (typeof this.value === 'undefined') {
           // Vue select has to manage value
           this.$data._value = value;
         }
@@ -1011,7 +1011,6 @@
        */
       selectedValue () {
         let value = this.value;
-
         if (this.isTrackingValues) {
           // Vue select has to manage value internally
           value = this.$data._value;
