@@ -753,22 +753,24 @@
        * @return {void}
        */
       toggleDropdown (event) {
+        const targetIsNotSearch = event.target !== this.$refs.search;
+        if (targetIsNotSearch) {
+          event.preventDefault();
+        }
+
         //  don't react to click on deselect/clear buttons,
         //  they dropdown state will be set in their click handlers
         const ignoredButtons = [
           ...(this.$refs['deselectButtons'] || []),
-          ...([this.$refs['clearButton']] || [])
+          ...([this.$refs['clearButton']] || []),
         ];
 
         if (ignoredButtons.some(ref => ref.contains(event.target) || ref === event.target)) {
-          event.preventDefault()
+          event.preventDefault();
           return;
         }
 
-        if (event.target != this.$refs.search) {
-          event.preventDefault()
-        }
-        if (this.open && (event.target != this.$refs.search)) {
+        if (this.open && targetIsNotSearch) {
           this.searchEl.blur();
         } else if (!this.disabled) {
           this.open = true;
